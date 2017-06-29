@@ -28,21 +28,11 @@ else
   @logger.info("Playlist '#{PLAYLIST_NAME}' already exists for user #{USER_ID}, will not re-create.")
 end
 
-desired_tracks = user.saved_tracks(limit: 50).map { |t| [t.id, t] }.to_h
-existing_tracks = playlist.tracks.map { |t| [t.id, t] }.to_h
+desired_tracks = user.saved_tracks(limit: 50)
 
-tracks_to_remove = existing_tracks.dup.delete_if { |k,_| desired_tracks.key?(k) }.values
-tracks_to_add = desired_tracks.dup.delete_if { |k,_| existing_tracks.key?(k) }.values
-
-@logger.info("Found #{tracks_to_remove.length} extra tracks in '#{PLAYLIST_NAME}'")
-@logger.info("Found #{tracks_to_add.length} missing tracks in '#{PLAYLIST_NAME}'")
 @logger.info("Updating '#{PLAYLIST_NAME}'...")
 
-unless tracks_to_remove.empty?
-  playlist.remove_tracks!(tracks_to_remove)
-end
-unless tracks_to_add.empty?
-  playlist.add_tracks!(tracks_to_add)
-end
+playlist.remove_tracks!(playlist.tracks)
+playlist.add_tracks!(desired_tracks)
 
 @logger.info("Succesfully updated '#{PLAYLIST_NAME}' for user #{USER_ID}")
